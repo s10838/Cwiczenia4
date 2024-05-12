@@ -24,13 +24,13 @@ namespace Cwiczenia4.Repositories
                 {
                     cmd.Connection = con;
 
-                    // Validate Amount
+             
                     if (Amount <= 0)
                     {
                         throw new ArgumentException("Amount should be greater than 0.");
                     }
 
-                    // Check if product exists
+                  
                     cmd.CommandText = "SELECT IdProduct FROM Product WHERE IdProduct = @IdProduct";
                     cmd.Parameters.AddWithValue("@IdProduct", IdProduct);
                     using (SqlDataReader reader = cmd.ExecuteReader())
@@ -41,7 +41,7 @@ namespace Cwiczenia4.Repositories
                         }
                     }
 
-                    // Check if warehouse exists
+                 
                     cmd.CommandText = "SELECT IdWarehouse FROM Warehouse WHERE IdWarehouse = @IdWarehouse";
                     cmd.Parameters.Clear();
                     cmd.Parameters.AddWithValue("@IdWarehouse", IdWarehouse);
@@ -53,7 +53,7 @@ namespace Cwiczenia4.Repositories
                         }
                     }
 
-                    // Check if order exists with required amount
+                  
                     cmd.CommandText = "SELECT IdOrder FROM [Order] WHERE IdProduct = @IdProduct AND Amount = @Amount AND CreatedAt < @CreatedAt";
                     cmd.Parameters.Clear();
                     cmd.Parameters.AddWithValue("@IdProduct", IdProduct);
@@ -67,7 +67,7 @@ namespace Cwiczenia4.Repositories
                         }
                     }
 
-                    // Check if order is fulfilled
+                 
                     cmd.CommandText = "SELECT 1 FROM Product_Warehouse WHERE IdOrder = (SELECT IdOrder FROM [Order] WHERE IdProduct = @IdProduct AND Amount = @Amount AND CreatedAt < @CreatedAt)";
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
@@ -77,11 +77,10 @@ namespace Cwiczenia4.Repositories
                         }
                     }
 
-                    // Update order to fulfilled
                     cmd.CommandText = "UPDATE [Order] SET FullfilledAt = GETDATE() WHERE IdOrder = (SELECT IdOrder FROM [Order] WHERE IdProduct = @IdProduct AND Amount = @Amount AND CreatedAt < @CreatedAt)";
                     cmd.ExecuteNonQuery();
 
-                    // Insert into Product_Warehouse
+                  
                     cmd.CommandText = "INSERT INTO Product_Warehouse (IdWarehouse, IdProduct, IdOrder, Amount, Price, CreatedAt) VALUES (@IdWarehouse, @IdProduct, (SELECT IdOrder FROM [Order] WHERE IdProduct = @IdProduct AND Amount = @Amount AND CreatedAt < @CreatedAt), @Amount, (SELECT Price FROM Product WHERE IdProduct = @IdProduct) * @Amount, GETDATE()); SELECT SCOPE_IDENTITY();";
                     cmd.Parameters.Clear();
                     cmd.Parameters.AddWithValue("@IdWarehouse", IdWarehouse);
